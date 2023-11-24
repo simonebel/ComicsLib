@@ -1,0 +1,84 @@
+#!/bin/bash
+
+source bin/utils
+function printUsage() {
+    cat <<EOF
+
+    Install all the dependencies needed.
+
+    Usage: bash install [--data-dir DATA_DIR] [--conda-env CONDA_ENV_NAME]
+
+    --data-dir : 
+    --conda-env : 
+
+EOF
+}
+
+DATA_DIR=""
+CONDA_ENV_NAME=""
+while [ $# -gt 0 ]; do
+    ARG=$1
+    case $ARG in
+    -h | --help)
+        printUsage
+        exit 1
+        ;;
+    --data-dir)
+        shift
+        DATA_DIR=$1
+        shift
+        ;;
+    --conda-env)
+        shift
+        CONDA_ENV_NAME=$1
+        shift
+        ;;
+    esac
+done
+
+if [ -z $DATA_DIR ]; then
+    error "DATA_DIR is not set and is required for sqlite, exiting..."
+    exit 0
+else
+    mkdir -p $DATA_DIR
+fi
+
+if [ -z $CONDA_ENV_NAME ]; then
+    error "CONDA_ENV_NAME is not set and is required to create a conda env, exiting..."
+    exit 0
+fi
+
+ROOT_DIR=$(pwd)
+
+# Install React
+npx create-react-app front
+cd $ROOT_DIR/front
+
+# npm dependencies
+npm install @mui/material @emotion/react @emotion/styled
+npm install react-router-dom localforage match-sorter sort-by
+
+# Create conda env
+source ~/anaconda3/etc/profile.d/conda.sh
+conda create --name $CONDA_ENV_NAME
+cd $ROOT_DIR/src
+pip install -r requirements.txt
+
+# Install sqlite
+SQLITE_DIR=$DATA_DIR/sqlite
+if [ -z $SQLITE_DIR ]; then
+    error "SQLITE_DIR var is not setup yet, source set-env.sh first"
+    exit 0
+else
+    info "Downloading SQLITE..."
+    wget -P $SQLITE_DIR https://www.sqlite.org/2023/sqlite-tools-linux-x64-3440000.zip
+    cd $SQLITE_DIR
+    unzip sqlite-tools-linux-x64-3440000.zip
+    rm sqlite-tools-linux-x64-3440000.zip
+fi
+
+cd $ROOT_DIR
+if [ ! -f ".env" ]; then
+    echo "CONDA_ENV_NAME=$CONDA_ENV_NAME" >>.env
+    echo "DATA_DIR=$DATA_DIR" >>.env
+fi

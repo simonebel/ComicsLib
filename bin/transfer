@@ -1,0 +1,43 @@
+#!/bin/bash
+
+source bin/utils
+
+function printUsage() {
+    cat <<EOF
+
+    Install all the dependencies needed.
+
+    Usage: bash install [--tgt-dir TARGET_DIR] 
+
+    --tgt-dir : 
+
+EOF
+}
+
+TARGET_DIR=""
+while [ $# -gt 0 ]; do
+    ARG=$1
+    case $ARG in
+    -h | --help)
+        printUsage
+        exit 1
+        ;;
+    --tgt-dir)
+        shift
+        TARGET_DIR=$1
+        shift
+        ;;
+
+    esac
+done
+
+if [ -z $TARGET_DIR ]; then
+    error "TARGET_DIR is not set, exiting..."
+    exit 0
+fi
+
+cp -r bin $TARGET_DIR
+cp -r front $TARGET_DIR
+cp -r src $TARGET_DIR
+cp .gitignore $TARGET_DIR
+cp set-env.sh $TARGET_DIR

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source utils
+
+info "Running API uvicorn server in dev env"
+uvicorn api.app:app --port 8001 --reload --reload-dir "$BASE_DIR/src/api"
