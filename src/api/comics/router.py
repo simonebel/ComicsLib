@@ -63,3 +63,8 @@ def create_comic(comic: RequestComic, db: Session = Depends(get_db)):
 @router.post("/authors/create", tags=["comics"])
 def create_author(author: Author, db: Session = Depends(get_db)):
     return crud.Author.create(db, author)
+
+
+@router.get("/comics/all", tags=["comics"])
+def get_comics_in_db(db: Session = Depends(get_db)):
+    return [comic.dict() for comic in crud.Comic.get_all(db)]

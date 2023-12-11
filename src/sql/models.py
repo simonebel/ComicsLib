@@ -5,6 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sql.database import Base
 
+PRIVATE_KEYS = {"_sa_instance_state"}
+
 
 class Comic(Base):
     __tablename__ = "comics"
@@ -23,6 +25,14 @@ class Comic(Base):
 
     # drawers = Mapped["Author"] = relationship(back_populates="children")
     # scenarists = Mapped["Author"] = relationship(back_populates="children")
+
+    def dict(self):
+        obj = {}
+        for key, value in self.__dict__.items():
+            if key not in PRIVATE_KEYS:
+                obj[key] = value
+
+        return obj
 
 
 class Author(Base):

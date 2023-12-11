@@ -6,4 +6,4 @@ DATA_DIR = os.environ["DATA_DIR"]
 SQLITE_DIR = os.environ["SQLITE_DIR"]
 SQLITE_DB = "comics.db"
 
-IMAGE_FOLDER = Path(DATA_DIR, "img")
+IMAGE_FOLDER = Path(BASE_DIR, "front", "public", "static", "img")
