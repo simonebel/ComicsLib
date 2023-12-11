@@ -298,11 +298,21 @@ class AssociationCrudModel(CrudModel):
         return False
 
 
-class ToyCrud(CrudModel):
+class Comic(CrudModel):
     """
     Interface for crud operations on the publications metadata
     """
 
-    schema = schemas.Toy
-    model = models.Toy
+    schema = schemas.Comic
+    model = models.Comic
+    pk = "id"
+
+
+class Author(CrudModel):
+    """
+    Interface for crud operations on the publications metadata
+    """
+
+    schema = schemas.Author
+    model = models.Author
     pk = "id"

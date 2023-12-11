@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.test import router as test_router
+from api.comics import router as comics_router
 
 app = FastAPI()
 
@@ -22,9 +22,4 @@ app.add_middleware(
     ],
 )
 
-app.include_router(test_router.router)
-
-
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
+app.include_router(comics_router.router)
