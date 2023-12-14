@@ -1,9 +1,36 @@
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel
 
 from api.comics.schemas import RequestComic
 from utils.hash import hash_xxh
+
+# AUTHORS_ROLE_MAP = {
+#     "dessinateur": 0,
+#     "dessinatrice": 0,
+#     "coloriste": 0,
+#     "scénariste": 1,
+# }
+
+DRAWER = 0
+SCENARIST = 1
+
+AUTHORS_ROLE_MAP = {
+    "scénario": 0,
+    "dessin": 1,
+    "couleurs": 2,
+    "lettrage": 3,
+    "textes": 4,
+    "traduction": 5,
+    "effets spéciaux": 6,
+    "couverture": 7,
+    "story-board": 8,
+}
+
+
+class AUTHORS_ROLE_MAP(Enum):
+    pass
 
 
 class Comic(BaseModel):
@@ -65,3 +92,21 @@ class Author(BaseModel):
         Generate a unique 32 bits based integer
         """
         self.id = hash_xxh(self.first_name + self.last_name + self.nick_name)
+
+
+class Serie(BaseModel):
+    id: int
+    name: str
+    editor: str
+    published_date: str
+    edition: str
+    format: str
+    ean: str
+    image: str
+    synopsis: str
+
+
+class AuthorSerieAssociation(BaseModel):
+    serie_id: int
+    author_id: int
+    role: int

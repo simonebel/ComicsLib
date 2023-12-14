@@ -1,13 +1,17 @@
+import json
 import logging
+from pathlib import Path
 from typing import Any, List
 
 from pydantic import BaseModel
 from sqlalchemy import insert, orm, select, update
 
+from conf.base import DATA_DIR
 from sql import models, schemas
-from sql.database import Base
+from sql.database import Base, SessionLocal
+from utils.log import get_log
 
-logger = logging.getLogger()
+logger = get_log(__file__)
 
 
 class CrudModel:
@@ -63,7 +67,7 @@ class CrudModel:
         """
         if cls._safe_schema(schema):
             db_model = cls.model(
-                **schema.dict(),
+                **schema.model_dump(),
             )
 
             record_exist = cls.get_by_id(db, cls._schema_pk(schema)) is not None
@@ -88,7 +92,7 @@ class CrudModel:
         Bulk upload datasets to the db.
         """
         filtered_schemas = [
-            schema.dict()
+            schema.model_dump()
             for schema in schemas
             if not cls.get_by_id(db, cls._schema_pk(schema))
             and cls._safe_schema(schema)
@@ -145,7 +149,7 @@ class CrudModel:
                 .values(
                     {
                         field: value
-                        for field, value in updated_schema.dict().items()
+                        for field, value in updated_schema.model_dump().items()
                         if value is not None
                     }
                 )
@@ -162,7 +166,9 @@ class CrudModel:
         """
         Update a record from the db
         """
-        db.execute(update(cls.model), [schema.dict() for schema in updated_schemas])
+        db.execute(
+            update(cls.model), [schema.model_dump() for schema in updated_schemas]
+        )
         db.commit()
         logger.info(
             f"{len(updated_schemas)} {cls.schema.__name__} successfully updated"
@@ -211,7 +217,7 @@ class AssociationCrudModel(CrudModel):
         link = cls.get(db, schema)
 
         if not link:
-            db_link = cls.model(**schema.dict())
+            db_link = cls.model(**schema.model_dump())
             db.add(db_link)
             db.commit()
             db.refresh(db_link)
@@ -316,3 +322,52 @@ class Author(CrudModel):
     schema = schemas.Author
     model = models.Author
     pk = "id"
+
+
+class Serie(CrudModel):
+    """
+    Interface for crud operations on the publications metadata
+    """
+
+    schema = schemas.Serie
+    model = models.Serie
+    pk = "id"
+
+
+class AuthorSerieAssociation(AssociationCrudModel):
+    """
+    Interface for crud operations on the publications metadata
+    """
+
+    schema = schemas.AuthorSerieAssociation
+    model = models.AuthorSerieAssociation
+    pk_1 = "serie_id"
+    pk_2 = "author_id"
+
+
+if __name__ == "__main__":
+    with SessionLocal() as db:
+        authors = Author.get_all(db)
+
+        print(authors[1])
+
+        # serie = schemas.Serie(
+        #     id=0,
+        #     name="L' Anxiété, quelle chose étrange",
+        #     editor="çà et là",
+        #     published_date="15 mars 2019",
+        #     edition="Édition originale",
+        #     format="Broché - 32 pages - 12€",
+        #     ean="978-2-3699-0264-5",
+        #     image="img.png",
+        #     synopsis="Après La douleur quelle chose étrange publiée en octobre 2018, Steve Haines consacre un nouveau petit précis à un thème de santé. Il se penche ici sur l’anxiété, parfois considérée comme le nouveau mal du siècle. En trente-deux pages, Haines brosse un tableau synthétique de ce que l’on sait sur cette émotion désagréable ressentie par tout le monde (sauf par les psychopathes), à des degrés plus ou moins importants. Steve Haines présente les nombreux facteurs considérés comme des causes pouvant accroître l’état d’anxiété, il détaille les différentes manifestations de ce trouble, et présente des pistes d’actions pour ceux qui en souffrent le plus ; les personnes pour lesquelles de nombreuses décisions du quotidien deviennent presque une question de vie ou de mort et provoquent des crises de panique.",
+        # )
+
+        # Serie.create(db, serie)
+        # author_map = schemas.AuthorSerieAssociation(
+        #     serie_id=0, author_id=269648, role=1
+        # )
+        # AuthorSerieAssociation.create(db, author_map)
+
+        serie = Serie.get_by_id(db, 0)
+        print(serie)

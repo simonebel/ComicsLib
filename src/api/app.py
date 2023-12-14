@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.comics import router as comics_router
+from api.home import router as home_router
 
 app = FastAPI()
 
@@ -23,3 +24,4 @@ app.add_middleware(
 )
 
 app.include_router(comics_router.router)
+app.include_router(home_router.router)

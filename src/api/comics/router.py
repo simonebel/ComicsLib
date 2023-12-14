@@ -38,13 +38,9 @@ def create_comic(comic: RequestComic, db: Session = Depends(get_db)):
     crud.Author.create(db, drawer)
     crud.Author.create(db, scenarist)
 
-    print(comic.image)
-
     comic = Comic.from_request_comics(comic, drawer.id, scenarist.id)
 
     img_path = donwload_img(comic.image, comic.id)
-
-    print(img_path)
 
     if img_path:
         comic.image = img_path
@@ -68,3 +64,8 @@ def create_author(author: Author, db: Session = Depends(get_db)):
 @router.get("/comics/all", tags=["comics"])
 def get_comics_in_db(db: Session = Depends(get_db)):
     return [comic.dict() for comic in crud.Comic.get_all(db)]
+
+
+@router.get("/comics/{comic_id}", tags=["comics"])
+def get_comic_in_db(comic_id: int, db: Session = Depends(get_db)):
+    return crud.Comic.get_by_id(db, comic_id)
